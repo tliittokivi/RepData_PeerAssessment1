@@ -7,16 +7,59 @@ output:
 
 
 ## Loading and preprocessing the data
+```{r load}
+library(dplyr)
+library(RColorBrewer)
+data <- read.csv("activity.csv", sep=",", header=TRUE)
+
+res <- 
+    data %>%
+    group_by(date) %>% 
+    summarize(avg = mean(steps), total=sum(steps))
+
+res2 <- 
+    data %>%
+    filter(!is.na(steps)) %>%
+    group_by(interval) %>% 
+    summarize(avg = mean(steps), total=sum(steps))
+
+```
+
 
 
 
 ## What is mean total number of steps taken per day?
 
+Histogram of daily steps (with mean drawn as blue line):
+```{r histo, echo=FALSE}
+hist(res$total, breaks=10, main="steps per day", col=brewer.pal(10,"Set3"))
+abline(v = mean(res$total,  na.rm = TRUE), col = "blue", lwd = 2)
+```
+
+Mean:
+```{r mean, echo=TRUE}
+mean(res$total,  na.rm = TRUE)
+```
+
+Median:
+```{r median, echo=TRUE}
+median(res$total,  na.rm = TRUE)
+```
 
 
 ## What is the average daily activity pattern?
 
+Time series of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis):
+```{r activityplot, echo=TRUE}
+plot(res2$interval, res2$avg, type = "l", xlab="interval", ylab="steps")
+```
 
+Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
+
+```{r highestInterval, echo=TRUE}
+highest <- res2[which.max(res2$avg),]
+highest$interval
+```
 
 ## Imputing missing values
 
