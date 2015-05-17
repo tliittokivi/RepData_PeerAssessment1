@@ -7,7 +7,8 @@ output:
 
 
 ## Loading and preprocessing the data
-```{r load, echo=TRUE, warning=FALSE, message=FALSE, results='hide'}
+
+```r
 library(dplyr)
 library(ggplot2)
 library(RColorBrewer)
@@ -26,7 +27,6 @@ byinterval <-
     filter(!is.na(steps)) %>%
     group_by(interval) %>% 
     summarize(avg = mean(steps), total=sum(steps))
-
 ```
 
 
@@ -34,19 +34,32 @@ byinterval <-
 ## What is mean total number of steps taken per day?
 
 Histogram of daily steps (with mean drawn as blue line):
-```{r histo, echo=TRUE}
+
+```r
 hist(bydate$total, breaks=10, main="Total number of steps taken per day", xlab="Steps", col=brewer.pal(10,"Set3"))
 abline(v = mean(bydate$total,  na.rm = TRUE), col = "blue", lwd = 2)
 ```
 
+![plot of chunk histo](figure/histo-1.png) 
+
 Mean:
-```{r mean, echo=TRUE}
+
+```r
 mean(bydate$total,  na.rm = TRUE)
 ```
 
+```
+## [1] 10766.19
+```
+
 Median:
-```{r median, echo=TRUE}
+
+```r
 median(bydate$total,  na.rm = TRUE)
+```
+
+```
+## [1] 10765
 ```
 
 
@@ -54,14 +67,22 @@ median(bydate$total,  na.rm = TRUE)
 ## What is the average daily activity pattern?
 
 Time series of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis):
-```{r activityplot, echo=TRUE}
+
+```r
 plot(byinterval$interval, byinterval$avg, type = "l", main="Average number of steps taken", xlab="interval", ylab="steps")
 ```
 
+![plot of chunk activityplot](figure/activityplot-1.png) 
+
 Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps:
-```{r highestInterval, echo=TRUE}
+
+```r
 highest <- byinterval[which.max(byinterval$avg),]
 highest$interval
+```
+
+```
+## [1] 835
 ```
 
 
@@ -69,14 +90,19 @@ highest$interval
 ## Imputing missing values
 
 Total number of missing values in the dataset:
-```{r missingvalues, echo=TRUE}
+
+```r
 nrow(data[is.na(data$steps),])
+```
+
+```
+## [1] 2304
 ```
 
 **Strategy for imputing missing data:** Fill NAs using average steps for that interval from other days. E.g. if an interval 125 has NA steps, the steps estimate for that row is average of all rows having interval 125 and non-NA steps value.
 
-```{r fillnas, echo=TRUE}
 
+```r
 # create vector with the same length as data set, having average steps for the interval in each row
 avg <- sapply(data$interval,  function(i) {byinterval[ byinterval$interval==i, ]$avg})
 
@@ -86,7 +112,8 @@ data$estimatedSteps <- ifelse(is.na(data$steps), avg, data$steps)
 ```
 
 New histogram of the total number of steps taken each day after missing values were imputed:
-```{r fillnas_histogram, echo=TRUE}
+
+```r
 # group estimated steps by date
 estimatedByDate <- 
     data %>%
@@ -96,8 +123,9 @@ estimatedByDate <-
 # histogram using estimated steps
 hist(estimatedByDate$total, breaks=10, main="Total number of steps taken per day", xlab="Steps", col=brewer.pal(10,"Set3"))
 abline(v = mean(estimatedByDate$total), col = "blue", lwd = 2)
-
 ```
+
+![plot of chunk fillnas_histogram](figure/fillnas_histogram-1.png) 
 
 
 
@@ -105,7 +133,8 @@ abline(v = mean(estimatedByDate$total), col = "blue", lwd = 2)
 
 For this plot we use previously calculated estimated steps for NAs. Results show there are some differences, weekdays seem to have more steps in the morning, weekends have more steps during rest of the day:
 
-```{r weekdays, echo=TRUE}
+
+```r
 # vector of dates in dataset as string, e.g. "Monday"
 days <- weekdays(as.Date(data$date))
 
@@ -127,3 +156,5 @@ g<-ggplot(byIntervalAndType, aes(interval, avg)) +
 
 print(g)
 ```
+
+![plot of chunk weekdays](figure/weekdays-1.png) 
